@@ -4,8 +4,8 @@ const { logActivity } = require('../utils/activityLogger');
 // Helper function to validate required fields
 const validateResident = (data) => {
   const requiredFields = ['firstName', 'lastName', 'birthDate', 'gender'];
-  const missingFields = requiredFields.filter(field => !(field in data));
-  
+  const missingFields = requiredFields.filter((field) => !(field in data));
+
   // Validate address structure
   if (!data.address || typeof data.address !== 'object') {
     missingFields.push('address (object with purok and street)');
@@ -13,61 +13,19 @@ const validateResident = (data) => {
     if (!data.address.purok) missingFields.push('address.purok');
     if (!data.address.street) missingFields.push('address.street');
   }
-  
+
   return missingFields;
 };
 
 // Get all residents
 exports.getAllResidents = async (req, res) => {
   try {
-    const { search, purok, gender, page = 1, limit = 10 } = req.query;
+    // No filters, no pagination, no find()
+    const residents = await Resident.aggregate([
+      { $sort: { createdAt: -1 } }
+    ]);
 
-    // Build filter object
-    const filter = {};
-
-    // Add purok filter if provided
-    if (purok) {
-      filter['address.purok'] = parseInt(purok);
-    }
-
-    // Add gender filter if provided
-    if (gender && ['Male', 'Female'].includes(gender)) {
-      filter.gender = gender;
-    }
-
-    // Add search filter (search in names)
-    if (search && search.trim()) {
-      const searchRegex = new RegExp(search.trim(), 'i'); // case-insensitive
-      filter.$or = [
-        { firstName: searchRegex },
-        { lastName: searchRegex },
-        { middleName: searchRegex }
-      ];
-    }
-
-    // Calculate pagination
-    const pageNum = Math.max(1, parseInt(page) || 1);
-    const limitNum = Math.max(1, Math.min(100, parseInt(limit) || 10)); // max 100 per page
-    const skip = (pageNum - 1) * limitNum;
-
-    // Get total count for pagination
-    const total = await Resident.countDocuments(filter);
-
-    // Fetch residents
-    const residents = await Resident.find(filter)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limitNum);
-
-    res.status(200).json({
-      residents,
-      pagination: {
-        total,
-        page: pageNum,
-        limit: limitNum,
-        pages: Math.ceil(total / limitNum)
-      }
-    });
+    res.status(200).json({ residents });
   } catch (err) {
     res.status(500).json({ message: 'Server Error', error: err.message });
   }
@@ -85,7 +43,7 @@ exports.addResident = async (req, res) => {
       });
     }
 
-    // Age will be calculated automatically by pre-save hook
+    // Age is calculated by the Resident pre-save hook
     const newResident = new Resident(req.body);
     await newResident.save();
 

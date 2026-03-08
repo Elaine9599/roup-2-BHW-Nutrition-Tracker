@@ -3,10 +3,11 @@ const dotenv = require('dotenv');
 const helmet = require('helmet');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
-const connectDB = require('./config/db');
-const passport = require('./config/passport');
 
 dotenv.config();
+
+const connectDB = require('./config/db');
+const passport = require('./config/passport');
 
 // Connect to MongoDB
 connectDB();
@@ -143,8 +144,8 @@ app.listen(PORT, () => {
   console.log(`
 ╔════════════════════════════════════════╗
 ║  BHW Nutrition Tracker Backend         ║
-║  Environment: ${NODE_ENV.padEnd(23)} ║
-║  Port: ${PORT.toString().padEnd(31)} ║
+║  Environment: ${NODE_ENV.padEnd(23)}   ║
+║  Port: ${PORT.toString().padEnd(31)}   ║
 ║  Secure: ${(NODE_ENV === 'production' ? 'HTTPS' : 'HTTP').padEnd(28)} ║
 ╚════════════════════════════════════════╝
   `);
