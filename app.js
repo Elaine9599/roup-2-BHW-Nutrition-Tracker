@@ -82,7 +82,7 @@ const dashboardRoutes = require('./routes/dashboardRoutes');
 
 
 // Mount routes
-app.use('/api/auth/google', authRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/residents', residentRoutes);
 app.use('/api/immunizations', immunizationRoutes);
